@@ -1,0 +1,1100 @@
+package proyecto1;
+import java_cup.runtime.*;
+import java.util.LinkedList;
+parser code
+{:
+
+/**Metodo al que se llama automáticamente ante algún error sintactico.*/
+public void syntax_error(Symbol s){
+System.out.println("Error en la Línea " + (s.right+1) +" Columna "+s.left+ ". Identificador "
++s.value + " no reconocido." );
+}
+
+/**Metodo al que se llama en el momento en que ya no es posible una recuperación de
+errores.*/
+public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+System.out.println("Error en la Línea " + (s.right+1)+ "Columna "+s.left+". Identificador " +
+s.value + " no reconocido.");
+}
+
+public Nodo arbol;
+
+:}
+
+
+action code
+{:
+
+:}
+
+
+terminal String tbreak , tdefault, tcontinue;
+terminal String tclass, timport, treturn;
+terminal String tif,telse,telseif,tfor,tswitch,tcase,twhile,tdo,trepeat,tuntil,tloop;
+terminal String textends;
+terminal String tpublic, tprivate, tprotected;
+terminal String tvoid, tsuper, tnull;
+terminal String tint, tdouble, tchar, tbool, tstring,verdadero,falso,tnew;
+terminal String tsobreescribir, tthis;
+terminal String tprint,tparseint,tparsedouble,tinttostr,tdobuletostr,tdoubletoint;
+terminal String asignacion, por, division, mas, menos,potencia;
+terminal String mayor, menor, mayorigual, menorigual, igualigual,noigual;
+terminal String or, xor, and, not;
+terminal String aumento, decremento;
+terminal String allave, cllave, acorchete, ccorchete, aparentesis,cparentesis;
+terminal String iambito, fambito;
+terminal String puntoycoma, coma, punto, dospuntos;
+terminal String cadena, numero, iden, caracter;
+
+terminal String idec, fdec, igram,fgram, icod, fcod, iterminal, fterminal;
+terminal String inonterminal, fnonterminal, itipo,ftipo, ilista, flista, inombre, fnombre;
+terminal String iprecedencia, fprecedencia, iasocia,fasocia, iasociacion, fasociacion;
+terminal String iinicio, isim, fsim,finicio,tulx,tupg;
+
+terminal String produce, oproduce, iaccion,faccion,dolar,dobledolar;
+
+non terminal Nodo INICIA,CUERPO,DECLARA,LISTDECLARA,ELEDECLARA,GRAM, CODIGO,TERMINAL, NONTERMINAL, PRECEDENCIA, ASOCIATIVIDAD, SIMINICIAL;
+non terminal Nodo LISTANOMBRES,NOMBRE,PERMISOS;
+non terminal Nodo LISTATERMINALES,PRECETERMINAL;
+non terminal Nodo LISTAPRODUCCIONES,PRODUCCION,TERMINALONOTERMINAL,LTERMINALONOTERMINAL,LISTAOMAS,OMAS;
+non terminal Nodo TIPO,TERMINALONOTERMINALYACC,ACCION;
+non terminal Nodo LENGUAJES,IMPORTS,IMPORT,CLASES,CLASE,ARCHIVO;
+non terminal Nodo CUEPOCODIGO,CODIGOS;
+non terminal Nodo DECLARACION,LVAR;
+non terminal Nodo VECTORES,DIMENSIONES,DIMENSION;
+non terminal Nodo ASIGNA,E;
+non terminal Nodo METODO,PARAMETROS,PARAMETRO,CUERPOMETODO,CODMECONS,RETORNOFUN,FUNCION,CONTRUC;
+non terminal Nodo INSTANCIA,PARAMETROINS;
+non terminal Nodo LLAMARMETODO,LLAMARMETMET,THISSUPER;
+non terminal Nodo IF,ELSE;
+non terminal Nodo SWITCH,CASOS,DEFECTO,CASE;
+non terminal Nodo WHILE,DOWHILE,REPEAT,FOR,LOOP;
+non terminal Nodo PRINT,PARSEINT,PASEDOUBLE,INTOSTR,DOBLETOSTR,DOUBLETOINT;
+non terminal Nodo LCODACCION,CODACCION;
+
+precedence left aumento, decremento;
+precedence left potencia;
+precedence left por, division;
+precedence left mas, menos;
+precedence left mayor, menor, menorigual , mayorigual;
+precedence left noigual, igualigual;
+precedence left not;
+precedence left and;
+precedence left xor;
+precedence left or;
+
+start with INICIA;
+
+INICIA::= CUERPO:arb{: Nodo nodo = new Nodo("arbol"); 
+						nodo.hijos.add(arb);
+						parser.arbol=nodo;
+						:};
+
+
+CUERPO::= DECLARA:dec GRAM:gram CODIGO:cod	{:	Nodo nodo = new Nodo("archivoupg");
+												nodo.hijos.add(dec);			
+												nodo.hijos.add(gram);
+												nodo.hijos.add(cod);
+												RESULT = nodo;
+											:};
+
+/*	DECLARA */
+
+DECLARA	::=	idec LISTDECLARA:dec fdec{:	RESULT = dec;	:};
+
+LISTDECLARA::=	LISTDECLARA:ldec	ELEDECLARA:dec{:	ldec.hijos.add(dec);	
+													RESULT = ldec;
+												:}
+				|ELEDECLARA:eld {:	Nodo nodo = new Nodo("listadeclaraciones");
+									nodo.hijos.add(eld);
+									RESULT = nodo;
+								:};
+				
+ELEDECLARA::=	TERMINAL:nodo		{:RESULT = nodo; :} 
+				|NONTERMINAL:nodo	{:RESULT = nodo; :}
+				|PRECEDENCIA:nodo	{:RESULT = nodo; :}
+				|ASOCIATIVIDAD:nodo	{:RESULT = nodo; :}
+				|SIMINICIAL:nodo	{:RESULT = nodo; :};
+
+TERMINAL::=	iterminal iden:id tulx fterminal{:	Nodo nodo = new Nodo("terminal");
+												Nodo arch = new Nodo(id);
+												nodo.hijos.add(arch);
+												
+												RESULT = nodo;
+												:};
+
+NONTERMINAL::=	inonterminal itipo TIPO:tip ftipo ilista LISTANOMBRES:lis flista  fnonterminal{:	Nodo nodo = new Nodo("nonterminales");
+																									nodo.hijos.add(tip);
+																									nodo.hijos.add(lis);
+																									RESULT = nodo;
+																								:};
+
+LISTANOMBRES::=	LISTANOMBRES:lnom NOMBRE:nom	{:	lnom.hijos.add(nom);
+													RESULT = lnom;	
+												:}
+												
+				|NOMBRE:nom{:	Nodo nodo = new Nodo("listanombres");	
+								nodo.hijos.add(nom);
+								
+								RESULT = nodo;
+								:};
+
+NOMBRE::=	inombre iden:id1 fnombre{:	Nodo nodo = new Nodo("nombre");	
+										Nodo ident = new Nodo(id1);
+										nodo.hijos.add(ident);
+										RESULT = nodo;
+									:};
+
+TIPO::=tint{:			Nodo nodo = new Nodo("int"); 
+						RESULT = nodo; 
+				:}
+		|tdouble{:		Nodo nodo = new Nodo("double"); 
+						RESULT = nodo; 
+				:}
+		|tchar{:		Nodo nodo = new Nodo("char"); 
+						RESULT = nodo; 
+				:}
+		|tbool{:		Nodo nodo = new Nodo("bool"); 
+						RESULT = nodo; 
+				:}
+		|tstring{:		Nodo nodo = new Nodo("string"); 
+						RESULT = nodo; 
+				:};
+
+PRECEDENCIA::=	iprecedencia ilista LISTATERMINALES:pre flista fprecedencia{:	RESULT = pre;	:};
+
+LISTATERMINALES::=	LISTATERMINALES:lpre	PRECETERMINAL:pre{:	lpre.hijos.add(pre);	
+																RESULT = lpre;
+															:}
+
+					|PRECETERMINAL:pre	{:	Nodo nodo = new Nodo("listaprecedencia");
+											nodo.hijos.add(pre);
+											RESULT = nodo;
+										:};
+
+PRECETERMINAL::=	iterminal iden:id1 fterminal{:	Nodo nodo = new Nodo("precendiaterminal");
+													Nodo ident = new Nodo(id1);
+													nodo.hijos.add(ident);
+													RESULT = nodo;
+												:};
+
+
+ASOCIATIVIDAD::=iasocia iasociacion iden:id1 fasociacion inombre iden:id2 fnombre  fasocia{:	Nodo nodo = new Nodo("asociatividad");
+																								Nodo iden1 = new Nodo(id1);
+																								Nodo iden2 = new Nodo(id2);
+																								nodo.hijos.add(iden1);
+																								nodo.hijos.add(iden2);
+																								
+																								RESULT = nodo;
+																								:};
+
+SIMINICIAL::=	iinicio isim iden:id fsim finicio{:	Nodo nodo = new Nodo("simboloinicial");
+													Nodo sim = new Nodo(id);
+													nodo.hijos.add(sim);
+													RESULT = nodo;
+													:}; 
+
+/*	GRAM */
+
+GRAM::=	igram LISTAPRODUCCIONES:nodo fgram{:	RESULT = nodo; :};
+
+LISTAPRODUCCIONES::= LISTAPRODUCCIONES:lpro PRODUCCION:pro{:	lpro.hijos.add(pro);
+																RESULT = lpro;
+															:}
+				|PRODUCCION:pro {:	Nodo nodo = new Nodo("producciones");
+									nodo.hijos.add(pro);
+									RESULT = nodo;
+								:};
+					
+PRODUCCION::=  TERMINALONOTERMINAL:term produce LTERMINALONOTERMINAL:term1 puntoycoma{:		Nodo nodo = new Nodo("produceoproduce");
+																							nodo.hijos.add(term);
+																							nodo.hijos.add(term1);
+																							RESULT = nodo;
+																						:}
+																						
+			|TERMINALONOTERMINAL:term produce LTERMINALONOTERMINAL:term1 LISTAOMAS:term2 puntoycoma{:	Nodo nodo = new Nodo("produceoproduce");
+																										nodo.hijos.add(term);
+																										nodo.hijos.add(term1);
+																										nodo.hijos.add(term2);
+																										RESULT = nodo;
+																									:};
+																										
+TERMINALONOTERMINAL::=menor iden:id1 mayor{:	Nodo nodo = new Nodo("termoonotermsinacciones");	
+												Nodo ident = new Nodo(id1);
+												nodo.hijos.add(ident);
+												RESULT = nodo;
+											:};
+
+LTERMINALONOTERMINAL::=LTERMINALONOTERMINAL:lter TERMINALONOTERMINALYACC:ter{:	lter.hijos.add(ter);
+																				RESULT = lter;
+																			:}
+						|TERMINALONOTERMINALYACC:n{:	Nodo nodo = new Nodo("producciones"); //Producciones dentro de un O o una linea
+														nodo.hijos.add(n);
+														RESULT = nodo;
+												:};
+
+
+						
+TERMINALONOTERMINALYACC::=TERMINALONOTERMINAL:nodo		{: RESULT = nodo; :}
+
+						|menor iden:id1 mayor ACCION:acc{:	Nodo nodo = new Nodo("termoonotermiconacciones");	
+															Nodo ident = new Nodo(id1);
+															nodo.hijos.add(ident);
+															nodo.hijos.add(acc);
+															RESULT = nodo;
+													:};
+
+ACCION::=iaccion LCODACCION:acc faccion{:	Nodo nodo = new Nodo("accion");
+											nodo.hijos.add(acc);
+											RESULT = nodo;
+										:};
+
+
+LCODACCION::=LCODACCION:lac CODACCION:ac	{:	lac.hijos.add(ac);
+												RESULT = lac;
+											:}
+											
+			|CODACCION:acc{:	Nodo nodo = new Nodo("acciones");
+								nodo.hijos.add(acc);
+								RESULT = acc;
+							:};
+
+CODACCION::=	dobledolar punto iden:id1 asignacion E:e1 puntoycoma{:	Nodo nodo = new Nodo("acciones");
+																		Nodo ident = new Nodo(id1);
+																		nodo.hijos.add(ident);
+																		nodo.hijos.add(e1);
+																		RESULT = nodo;
+																	:}
+
+				|INSTANCIA:ins{:	RESULT = ins;	:};
+			
+LISTAOMAS::= LISTAOMAS:lis OMAS:pro	{:	lis.hijos.add(pro);
+										RESULT = lis;
+									:}
+			|OMAS:produce	{:	Nodo nodo = new Nodo("listaoproduce");
+								nodo.hijos.add(produce);
+								RESULT = nodo;
+							:};		/*	| <> ... <>
+										| <> ... <>
+										| <> ... <> ... lista de o produce
+									*/
+						
+OMAS::= oproduce LTERMINALONOTERMINAL:lista{:	Nodo nodo = new Nodo("oproduce");
+												nodo.hijos.add(lista);
+												RESULT = nodo;
+												:}; 	//  | <> ... <>
+			
+/*	CODIGO */
+			
+CODIGO::= icod LENGUAJES:len fcod{:	RESULT = len;	:};
+
+LENGUAJES::=IMPORTS:im CLASES:cl	{:	Nodo nodo = new Nodo("impyclases");
+										nodo.hijos.add(im);
+										nodo.hijos.add(cl);
+										RESULT = nodo;
+									:}
+										
+			|CLASES:cl				{:	Nodo nodo = new Nodo("soloclases");
+										nodo.hijos.add(cl);
+										RESULT = nodo;
+									:};
+
+/*	import */
+
+IMPORTS::=	IMPORTS:ims IMPORT:im	{:	ims.hijos.add(im);
+										RESULT = ims;
+								:}
+			|IMPORT:im{:	Nodo nodo = new Nodo("imports");
+							nodo.hijos.add(im);
+							RESULT = nodo;
+			:};
+			
+IMPORT::=	timport ARCHIVO:arch puntoycoma{:	Nodo nodo = new Nodo("importarvariosdeunavez");	
+												nodo.hijos.add(arch);
+												RESULT = nodo;
+											:};	
+
+ARCHIVO::= 	ARCHIVO:archivos coma iden:id tupg{:	Nodo ident = new Nodo(id);
+													archivos.hijos.add(ident);
+													RESULT = archivos;
+												:}
+
+			|iden:id tupg{:	Nodo nodo = new Nodo("archivos");	
+							Nodo ident = new Nodo(id);
+							nodo.hijos.add(ident);
+							RESULT = nodo;
+						:};
+
+/*	clases   */
+
+CLASES::=	CLASES:clas CLASE:cla {:	clas.hijos.add(cla);
+										RESULT = clas;
+									:}
+									
+			|CLASE:clas {:	Nodo nodo = new Nodo("clases");
+							nodo.hijos.add(clas);
+							RESULT = nodo;
+			:}
+			;
+			
+CLASE::=	tclass iden:id1 iambito CODIGOS:cod	fambito {:	Nodo nodo = new Nodo("clase");
+															Nodo ident1 = new Nodo(id1);
+															nodo.hijos.add(ident1);
+															nodo.hijos.add(cod);
+															RESULT = nodo;
+																		:}
+			|tclass iden:id1 textends iden:id2 iambito CODIGOS:cod	fambito{:	Nodo nodo = new Nodo("claseextend");
+																							Nodo ident1 = new Nodo(id1);
+																							Nodo ident2 = new Nodo(id2);
+																							nodo.hijos.add(ident1);
+																							nodo.hijos.add(ident2);
+																							nodo.hijos.add(cod);
+																							RESULT = nodo;
+																						:}
+																						
+			|PERMISOS:perm tclass iden:id1 iambito CODIGOS:cod	fambito {:	Nodo nodo = new Nodo("claseperm");
+																			Nodo ident1 = new Nodo(id1);
+																			nodo.hijos.add(perm);
+																			nodo.hijos.add(ident1);
+																			nodo.hijos.add(cod);
+																			RESULT = nodo;
+																		:}
+																						
+			|PERMISOS:perm tclass iden:id1 textends iden:id2 iambito CODIGOS:cod fambito{:	Nodo nodo = new Nodo("clasepermextend");
+																							Nodo ident1 = new Nodo(id1);
+																							Nodo ident2 = new Nodo(id2);
+																							nodo.hijos.add(perm);
+																							nodo.hijos.add(ident1);
+																							nodo.hijos.add(ident2);
+																							nodo.hijos.add(cod);
+																							RESULT = nodo;
+																						:}
+			
+			;	
+
+CODIGOS::=	CODIGOS:codigo CUEPOCODIGO:cod{:	codigo.hijos.add(cod);		
+												RESULT = codigo;
+											:}
+											
+			|CUEPOCODIGO:cod{:		Nodo nodo = new Nodo("codigo");
+									nodo.hijos.add(cod);
+									RESULT = nodo;
+							:};
+
+CUEPOCODIGO::=	DECLARACION:nodo	{:RESULT = nodo; :}
+				|METODO:nodo		{:RESULT = nodo; :}
+				|FUNCION:nodo		{:RESULT = nodo; :}
+				|CONTRUC:nodo		{:RESULT = nodo; :}
+				|INSTANCIA:nodo		{:RESULT = nodo; :}
+				|tsobreescribir{:	Nodo nodo = new Nodo("sobrescribir"); 
+									RESULT = nodo; 
+								:}
+				;
+
+/*	declaracion   */
+
+DECLARACION::=	PERMISOS:perm TIPO:tip LVAR:listvar puntoycoma{:	Nodo nodo = new Nodo("decpermlistavar");
+																	nodo.hijos.add(perm);
+																	nodo.hijos.add(tip);
+																	nodo.hijos.add(listvar);
+										
+																	RESULT = nodo;
+																:}
+
+				|PERMISOS:perm TIPO:tip ASIGNA:asig{:	Nodo nodo = new Nodo("decvarpermasig");
+														nodo.hijos.add(perm);
+														nodo.hijos.add(tip);
+														nodo.hijos.add(asig);
+							
+														RESULT = nodo;
+													:} //public int x = 3;
+													
+				|PERMISOS:perm TIPO:tip VECTORES:vec puntoycoma{:	Nodo nodo = new Nodo("decvectorperm");
+																	nodo.hijos.add(perm);
+																	nodo.hijos.add(tip);
+																	nodo.hijos.add(vec);
+																	
+																	RESULT = nodo;
+																:}
+				|PERMISOS:perm TIPO:tip VECTORES:vec asignacion E:e1 puntoycoma{:	Nodo nodo = new Nodo("decvectorpermasig");
+																					nodo.hijos.add(perm);
+																					nodo.hijos.add(tip);
+																					nodo.hijos.add(vec);
+																					nodo.hijos.add(e1);
+																					RESULT = nodo;
+																				:}
+				
+				|TIPO:tip LVAR:listvar puntoycoma{:	Nodo nodo = new Nodo("declistavar");
+													nodo.hijos.add(tip);
+													nodo.hijos.add(listvar);
+						
+													RESULT = nodo;
+												:}
+				
+				|TIPO:tip ASIGNA:asig {:	Nodo nodo = new Nodo("decvarasig");
+											nodo.hijos.add(tip);
+											nodo.hijos.add(asig);
+				
+											RESULT = nodo;
+										:} //int x = 3;
+				
+				|TIPO:tip VECTORES:vec puntoycoma{:	Nodo nodo = new Nodo("decvector");
+													nodo.hijos.add(tip);
+													nodo.hijos.add(vec);
+													
+													RESULT = nodo;
+												:}
+				
+				|TIPO:tip VECTORES:vec asignacion E:e1 puntoycoma{:	Nodo nodo = new Nodo("decvectorasig");
+																	nodo.hijos.add(tip);
+																	nodo.hijos.add(vec);
+																	nodo.hijos.add(e1);
+																	RESULT = nodo;
+																:}
+																	
+				;
+
+PERMISOS::= tpublic		{:	Nodo nodo = new Nodo("public"); 
+							RESULT = nodo; 
+						:}
+			|tprivate	{:	Nodo nodo = new Nodo("private"); 
+							RESULT = nodo; 
+						:}
+			|tprotected{:	Nodo nodo = new Nodo("protected"); 
+							RESULT = nodo; 
+						:};
+			
+
+			
+LVAR::=	LVAR:listvar coma iden:var	{:	Nodo var1 = new Nodo(var);
+										listvar.hijos.add(var1);	
+										RESULT = listvar;
+									:}
+
+		|iden:id {:	Nodo nodo = new Nodo("listavariables");
+					Nodo ident = new Nodo(id);
+					nodo.hijos.add(ident);
+					
+					RESULT = nodo;
+				:}
+		;
+		
+VECTORES::=	iden:id DIMENSIONES:dim{:	Nodo nodo = new Nodo("vector");
+										Nodo ident = new Nodo(id);
+										nodo.hijos.add(ident);
+										nodo.hijos.add(dim);
+										
+										RESULT =  nodo;
+									:};
+
+DIMENSIONES::=DIMENSIONES:dimens DIMENSION:dimen{:	dimens.hijos.add(dimen);
+													
+													RESULT = dimens;
+												:}
+												
+				|DIMENSION:dimen{:	Nodo nodo = new Nodo("dimensiones");
+									nodo.hijos.add(dimen);
+									
+									RESULT = nodo;
+								:};
+				
+DIMENSION::= acorchete numero:num ccorchete{:	Nodo nodo = new Nodo("dimension");
+												Nodo numer = new Nodo(num);
+												nodo.hijos.add(numer);
+
+												RESULT = nodo;
+											:};
+
+/*  asignacion */
+
+ASIGNA::=	iden:id asignacion E:e1 puntoycoma{:	Nodo nodo = new Nodo("asignacion");
+													Nodo ident = new Nodo(id);
+													nodo.hijos.add(ident);
+													nodo.hijos.add(e1);
+													
+													RESULT = nodo;
+												:};
+
+
+
+/*	metodo   */
+
+METODO::=	tvoid iden:id aparentesis PARAMETROS:param cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("metodoconparam");
+																											Nodo ident = new Nodo(id);
+																											nodo.hijos.add(ident);
+																											nodo.hijos.add(param);
+																											nodo.hijos.add(cuerpo);
+																											RESULT = nodo;
+																										:}
+
+			|tvoid iden:id aparentesis cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("metodosinparam");
+																							Nodo ident = new Nodo(id);
+																							nodo.hijos.add(ident);
+																							nodo.hijos.add(cuerpo);
+																							RESULT = nodo;
+																						:}
+																						
+			|PERMISOS:perm tvoid iden:id aparentesis PARAMETROS:param cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("metodopermconparam");
+																														Nodo ident = new Nodo(id);
+																														nodo.hijos.add(perm);
+																														nodo.hijos.add(ident);
+																														nodo.hijos.add(param);
+																														nodo.hijos.add(cuerpo);
+																														RESULT = nodo;
+																													:}
+																													
+			|PERMISOS:perm tvoid iden:id aparentesis cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("metodopermsinparam");
+																										Nodo ident = new Nodo(id);
+																										nodo.hijos.add(perm);
+																										nodo.hijos.add(ident);
+																										nodo.hijos.add(cuerpo);
+																										RESULT = nodo;
+																									:}
+			;
+
+PARAMETROS::= PARAMETROS:params coma PARAMETRO:param {:	params.hijos.add(param);
+														RESULT = params; 
+													:}
+
+				|PARAMETRO:param{:	Nodo nodo = new Nodo("parametros");
+									nodo.hijos.add(param);
+									
+									RESULT = nodo;
+								:};
+				
+PARAMETRO::=	TIPO:tip iden:id{:	Nodo nodo = new Nodo("parametro");
+									Nodo iden = new Nodo(id);
+									nodo.hijos.add(tip);
+									nodo.hijos.add(iden);
+									
+									RESULT = nodo;
+								:}
+;
+
+CUERPOMETODO::=	CUERPOMETODO:cuerpos CODMECONS:cuerpo{:	cuerpos.hijos.add(cuerpo);
+														RESULT = cuerpos;
+													:}
+
+				|CODMECONS:cuerpo{:	Nodo nodo = new Nodo("cuerpometodo");
+									nodo.hijos.add(cuerpo);
+									RESULT = nodo;
+								:};
+
+CODMECONS::=	ASIGNA:nodo			{:RESULT = nodo; :}
+				|DECLARACION:nodo	{:RESULT = nodo; :}
+				|INSTANCIA:nodo		{:RESULT = nodo; :}
+				|LLAMARMETODO:nodo	{:RESULT = nodo; :}
+				|LLAMARMETMET:nodo	{:RESULT = nodo; :}
+				|RETORNOFUN:nodo	{:RESULT = nodo; :}
+				|THISSUPER:nodo		{:RESULT = nodo; :}
+				|IF:nodo			{:RESULT = nodo; :}
+				|SWITCH:nodo		{:RESULT = nodo; :}
+				|WHILE:nodo			{:RESULT = nodo; :}
+				|DOWHILE:nodo		{:RESULT = nodo; :}
+				|REPEAT:nodo 		{:RESULT = nodo; :}
+				|FOR:nodo			{:RESULT = nodo; :}
+				|LOOP:nodo			{:RESULT = nodo; :}
+				|PRINT:nodo			{:RESULT = nodo; :}
+				|tbreak puntoycoma		{:	Nodo nodo = new Nodo("break"); 
+											RESULT = nodo; 
+										:}
+				|tcontinue puntoycoma{:		Nodo nodo = new Nodo("continue"); 
+											RESULT = nodo; 
+										:}
+				;
+
+
+				
+/*	funciones propias del lenguaje */
+
+PRINT::=	tvoid tprint E:e1 cparentesis puntoycoma{:	Nodo nodo = new Nodo("print"); 
+														nodo.hijos.add(e1);
+														RESULT = nodo;
+													:};
+
+PARSEINT::=tparseint E:e1 cparentesis {:	Nodo nodo = new Nodo("parseint"); 
+											nodo.hijos.add(e1);
+											RESULT = nodo;
+											
+										:};
+
+PASEDOUBLE::=tparsedouble E:e1 cparentesis {:	Nodo nodo = new Nodo("parsedouble"); 
+												nodo.hijos.add(e1);
+												RESULT = nodo;
+											:};
+
+INTOSTR::=tinttostr E:e1 cparentesis {:			Nodo nodo = new Nodo("intostr"); 
+												nodo.hijos.add(e1);
+												RESULT = nodo;
+											:};
+
+DOBLETOSTR::=tdobuletostr E:e1 cparentesis {:	Nodo nodo = new Nodo("doubletoint"); 
+												nodo.hijos.add(e1);
+												RESULT = nodo;
+											:};
+
+DOUBLETOINT::=tdoubletoint E:e1 cparentesis {:	Nodo nodo = new Nodo("doubletoint"); 
+												nodo.hijos.add(e1);
+												RESULT = nodo;
+											:};
+
+/* super - this */
+
+THISSUPER::=	tthis punto iden:id aparentesis PARAMETROINS:param cparentesis puntoycoma{:		Nodo nodo = new Nodo("this"); 
+																								nodo.hijos.add(param);
+																								RESULT = nodo;
+																							:} //
+
+				|tsuper punto iden:id aparentesis PARAMETROINS:param cparentesis puntoycoma{:	Nodo nodo = new Nodo("super1"); 
+																								Nodo id1 = new Nodo(id); 
+																								nodo.hijos.add(id1);
+																								nodo.hijos.add(param);
+																								RESULT = nodo;
+																							:} //super.llenado(15);
+				
+				|tsuper aparentesis PARAMETROINS:param cparentesis puntoycoma {:	Nodo nodo = new Nodo("super2"); 
+																					nodo.hijos.add(param);
+																					RESULT = nodo;
+																				:} //super(cap);
+				;
+				
+				
+/*	funcion 	*/
+
+FUNCION::=	TIPO:tip iden:id aparentesis PARAMETROS:param cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("funcionparam");
+																											Nodo iden = new Nodo(id);
+																											nodo.hijos.add(tip);
+																											nodo.hijos.add(iden);
+																											nodo.hijos.add(param);
+																											nodo.hijos.add(cuerpo);
+																											
+																											RESULT = nodo;
+																							:}
+
+			|TIPO:tip iden:id aparentesis cparentesis iambito CUERPOMETODO:cuerpo  fambito{:	Nodo nodo = new Nodo("funcionsinparam");
+																								Nodo iden = new Nodo(id);
+																								nodo.hijos.add(tip);
+																								nodo.hijos.add(iden);
+																								nodo.hijos.add(cuerpo);
+																								RESULT = nodo;
+																								
+																							:}
+			
+			
+			
+			|PERMISOS:perm TIPO:tip iden:id aparentesis PARAMETROS:param cparentesis iambito CUERPOMETODO:cuerpo  fambito{:	Nodo nodo = new Nodo("funcionpermparam");
+																															Nodo iden = new Nodo(id);
+																															nodo.hijos.add(perm);
+																															nodo.hijos.add(tip);
+																															nodo.hijos.add(iden);
+																															nodo.hijos.add(param);
+																															nodo.hijos.add(cuerpo);
+																															RESULT = nodo;
+																														:}
+																														
+			
+			|PERMISOS:perm TIPO:tip iden:id aparentesis cparentesis iambito CUERPOMETODO:cuerpo  fambito{:	Nodo nodo = new Nodo("funcionpermsinparam");
+																											Nodo iden = new Nodo(id);
+																											nodo.hijos.add(perm);
+																											nodo.hijos.add(tip);
+																											nodo.hijos.add(iden);
+																											nodo.hijos.add(cuerpo);
+																											RESULT = nodo;
+																										:}
+																										;
+
+RETORNOFUN::=	treturn E:e1 puntoycoma{:	Nodo nodo = new Nodo("return");
+											nodo.hijos.add(e1);
+											RESULT = nodo;	:};
+
+/*	contructor*/
+
+CONTRUC::=	iden:id aparentesis PARAMETROS:param cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("constructor");
+																									Nodo iden = new Nodo(id);
+																									nodo.hijos.add(iden);
+																									nodo.hijos.add(param);
+																									nodo.hijos.add(cuerpo);
+																									
+																									RESULT = nodo;
+																								:}
+																								
+			|iden:id aparentesis cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("constructorconparam");
+																					Nodo iden = new Nodo(id);
+																					nodo.hijos.add(iden);																					
+																					nodo.hijos.add(cuerpo);
+																					
+																					RESULT = nodo;
+																				:}
+																				;
+
+/*	instancia	*/
+
+INSTANCIA::= iden:id1 iden:id2 asignacion tnew iden:id3 aparentesis PARAMETROINS:param cparentesis puntoycoma{:	Nodo nodo = new Nodo("instancia");
+																													Nodo iden1 = new Nodo(id1);
+																													Nodo iden2 = new Nodo(id2);
+																													Nodo iden3 = new Nodo(id3);
+																													nodo.hijos.add(iden1);
+																													nodo.hijos.add(iden2);
+																													nodo.hijos.add(iden3);
+																													nodo.hijos.add(param);
+																													
+																													RESULT = nodo;
+																												:}
+																												;
+																												
+PARAMETROINS::=PARAMETROINS:param coma E:e1 {:	param.hijos.add(e1);
+												RESULT = param;
+											:}
+												
+				|E:e1 {:	Nodo nodo = new Nodo("ParamIns");
+							nodo.hijos.add(e1);
+							RESULT = nodo;
+						:}
+				;
+
+/* llama de un metodo*/
+
+LLAMARMETMET::=	iden:id1 punto iden:id2 aparentesis PARAMETROINS:param cparentesis puntoycoma	{:	Nodo nodo = new Nodo("LlmarMetodoConParam");
+																									Nodo iden = new Nodo(id1);
+																									Nodo iden1 = new Nodo(id2);
+																									nodo.hijos.add(iden);
+																									nodo.hijos.add(iden1);
+																									nodo.hijos.add(param);
+																									RESULT = nodo;
+																								:}	
+																				
+																				
+																				;
+																				
+							
+LLAMARMETODO::= iden:nom aparentesis PARAMETROINS:lista cparentesis puntoycoma	{: 	Nodo nodo = new Nodo("LlmarMetodoConParam");
+																					Nodo nombre = new Nodo(nom);
+																					nodo.hijos.add(nombre);
+																					nodo.hijos.add(lista);
+																					RESULT = nodo;
+																				:}
+																				
+				|iden:nom aparentesis cparentesis puntoycoma	{: 	Nodo nodo = new Nodo("LlmarMetodoSinParam");
+																	Nodo nombre = new Nodo(nom);
+																	nodo.hijos.add(nombre);
+																	RESULT = nodo;
+																:}
+																;
+
+/* if else */
+
+IF::= tif E:e1 iambito CUERPOMETODO:cuerpo fambito ELSE:e2	{: 	Nodo nodo = new Nodo("if");
+																nodo.hijos.add(e1); 
+																nodo.hijos.add(cuerpo);
+																nodo.hijos.add(e2);
+																RESULT = nodo; 			
+															:};
+
+ELSE::= telseif E:e1 iambito CUERPOMETODO:cuerpo fambito ELSE:e2	{: 	Nodo nodo = new Nodo("elseif");
+																		nodo.hijos.add(e1);
+																		nodo.hijos.add(cuerpo);
+																		nodo.hijos.add(e2);
+																		RESULT = nodo; 			
+																	:}
+															
+		| telse iambito CUERPOMETODO:cuerpo fambito{: 	Nodo nodo = new Nodo("else");
+														nodo.hijos.add(cuerpo);
+														RESULT = nodo; 														
+													:}
+		| ;
+																
+
+/*	switch case	*/
+
+
+
+SWITCH::= tswitch E:e1 iambito CASOS:caso DEFECTO:defec fambito{: 	Nodo nodo = new Nodo("switch");
+																	nodo.hijos.add(e1);
+																	caso.hijos.add(defec);
+																	nodo.hijos.add(caso);
+																	RESULT = nodo; 
+																:};
+
+CASOS::= CASOS:cass CASE:cas{: 	cass.hijos.add(cas);
+								RESULT = cass;	 
+							:}
+								
+		| CASE:cas	{: 	Nodo nodo = new Nodo("casos");
+						nodo.hijos.add(cas);
+						RESULT = nodo;	 
+					:};
+
+CASE::= tcase E:e1 dospuntos CUERPOMETODO:cuerpo{:  Nodo nodo = new Nodo("caso");
+													nodo.hijos.add(e1);
+													nodo.hijos.add(cuerpo);
+													RESULT = nodo;		
+												:};
+
+					
+DEFECTO::= tdefault dospuntos CUERPOMETODO:cuerpo{:	Nodo nodo = new Nodo("defecto");
+													nodo.hijos.add(cuerpo);
+													RESULT = nodo;		
+												:}
+			| ;
+
+
+/* 	while y DoWhile */
+
+WHILE::= twhile E:e1 iambito CUERPOMETODO:cuerpo fambito{: 	Nodo nodo = new Nodo("while");
+															nodo.hijos.add(e1);
+															nodo.hijos.add(cuerpo);
+															RESULT = nodo;																										
+														:};
+																					
+DOWHILE::= tdo iambito CUERPOMETODO:cuerpo fambito  twhile E:e1 puntoycoma{: 	Nodo nodo = new Nodo("dowhile");
+																				nodo.hijos.add(cuerpo);
+																				nodo.hijos.add(e1);
+																				RESULT = nodo;
+																		:};		
+/*	repeat */																		
+REPEAT::= trepeat iambito CUERPOMETODO:cuerpo fambito  tuntil E:e1 puntoycoma{: 	Nodo nodo = new Nodo("repeat");
+																					nodo.hijos.add(cuerpo);
+																					nodo.hijos.add(e1);
+																					RESULT = nodo;
+																			:};		
+/*	for */
+
+FOR::=	tfor aparentesis TIPO:tipo ASIGNA:e1 E:e2 puntoycoma E:e3 cparentesis iambito CUERPOMETODO:cuerpo fambito{:	Nodo nodo = new Nodo("for");
+																													nodo.hijos.add(tipo);
+																													nodo.hijos.add(e1);
+																													nodo.hijos.add(e2);
+																													nodo.hijos.add(e3);
+																													nodo.hijos.add(cuerpo);
+																													
+																													RESULT = nodo;
+																													
+																												:}
+																								
+;
+
+
+/*	loop  */
+
+LOOP::=	tloop iambito CUERPOMETODO:cuerpo fambito	{:	Nodo nodo = new Nodo("loop");
+														nodo.hijos.add(cuerpo);
+														RESULT = nodo;
+													:}
+											
+
+;
+			
+/*	E para operaciones */			
+
+
+E::= E:e1 mas E:e2	{: 	Nodo nodo = new Nodo("suma");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+					
+	| E:e1 menos E:e2{:	Nodo nodo = new Nodo("resta");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+					
+	| E:e1 por E:e2{: 	Nodo nodo = new Nodo("multiplicacion");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+					
+	| E:e1 division E:e2{: 	Nodo nodo = new Nodo("division");
+							nodo.hijos.add(e1);
+							nodo.hijos.add(e2);
+							RESULT = nodo; 
+						:}
+						
+	| E:e1 potencia E:e2{: 	Nodo nodo = new Nodo("potencia");
+							nodo.hijos.add(e1);
+							nodo.hijos.add(e2);
+							RESULT = nodo; 
+						:}
+						
+	| E:e1 aumento{: 	Nodo nodo = new Nodo("aumento");
+						nodo.hijos.add(e1);
+						RESULT = nodo; 
+					:}
+					
+	| E:e1 decremento{:	Nodo nodo = new Nodo("decremento");
+						nodo.hijos.add(e1);
+						RESULT = nodo; 
+					:}
+					
+	| allave E:e1 cllave{: 	Nodo nodo = new Nodo("llaves");
+							nodo.hijos.add(e1);
+							RESULT = nodo; 
+						:}
+						
+	| acorchete E:e1 ccorchete{: 	Nodo nodo = new Nodo("corchetes");
+									nodo.hijos.add(e1);
+									RESULT = nodo; 
+								:}
+								
+	| aparentesis E:e1 cparentesis{: 	Nodo nodo = new Nodo("parentesis");
+										nodo.hijos.add(e1);
+										RESULT = nodo; 
+									:}
+									
+	| E:e1 igualigual E:e2{: 	Nodo nodo = new Nodo("igualigual");
+								nodo.hijos.add(e1);
+								nodo.hijos.add(e2);
+								RESULT = nodo; 
+							:}
+							
+	| E:e1 noigual E:e2{: 	Nodo nodo = new Nodo("noigual");
+							nodo.hijos.add(e1);
+							nodo.hijos.add(e2);
+							RESULT = nodo; 
+						:}
+						
+	| E:e1 mayorigual E:e2{: 	Nodo nodo = new Nodo("mayorigual");
+								nodo.hijos.add(e1);
+								nodo.hijos.add(e2);
+								RESULT = nodo; 
+							:}
+							
+	| E:e1 menorigual E:e2{: 	Nodo nodo = new Nodo("menorigual");
+								nodo.hijos.add(e1);
+								nodo.hijos.add(e2);
+								RESULT = nodo; 
+							:}
+							
+	| E:e1 mayor E:e2{:	Nodo nodo = new Nodo("mayor");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+						
+	| E:e1 menor E:e2{: 	Nodo nodo = new Nodo("menor");
+							nodo.hijos.add(e1);
+							nodo.hijos.add(e2);
+							RESULT = nodo; 
+						:}
+						
+	| E:e1 and E:e2{: 	Nodo nodo = new Nodo("and");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+	| E:e1 or E:e2{: 	Nodo nodo = new Nodo("or");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+					
+	| not E:e1{: 	Nodo nodo = new Nodo("not");
+					nodo.hijos.add(e1);
+					RESULT = nodo; 
+				:}
+				
+	| E:e1 xor E:e2{: 	Nodo nodo = new Nodo("xor");
+						nodo.hijos.add(e1);
+						nodo.hijos.add(e2);
+						RESULT = nodo; 
+					:}
+					
+	| numero :num {: 	Nodo nodo = new Nodo("valor");
+						Nodo tipo;
+							if (num.indexOf (".") != -1) 
+								tipo = new Nodo("double");
+							else
+								tipo = new Nodo("int");
+						nodo.hijos.add(tipo);
+						nodo.hijos.add(new Nodo(num));
+						RESULT = nodo;  
+					:}  
+					
+	| cadena:cade {: 	Nodo nodo = new Nodo("valor");
+						Nodo tipo = new Nodo("string");
+						nodo.hijos.add(tipo);
+						nodo.hijos.add(new Nodo(cade.replaceAll("\"", "")));
+						RESULT = nodo; 
+					:}
+					
+	| verdadero:verd {:	Nodo nodo = new Nodo("valor");
+						Nodo tipo = new Nodo("bool");
+						nodo.hijos.add(tipo);
+						nodo.hijos.add(new Nodo("1"));
+						RESULT = nodo; 
+					:}
+					
+	| caracter:car {: 	Nodo nodo = new Nodo("valor");
+						Nodo tipo = new Nodo("char");
+						nodo.hijos.add(tipo);
+						nodo.hijos.add(new Nodo(car.replaceAll("'", "")));
+						RESULT = nodo; 
+					:}
+						
+	| falso:fals {:	Nodo nodo = new Nodo("valor");
+					Nodo tipo = new Nodo("bool");
+					nodo.hijos.add(tipo);
+					nodo.hijos.add(new Nodo("0"));
+					RESULT = nodo; 
+				:}
+				
+	| iden:id {:  	Nodo nodo = new Nodo("variable");
+					Nodo iden = new Nodo(id);
+					nodo.hijos.add(iden);
+					RESULT = nodo;  
+				:}
+	
+	|PARSEINT:nodo		{: RESULT = nodo; :}
+	
+	|PASEDOUBLE:nodo	{: RESULT = nodo; :}
+	
+	|INTOSTR:nodo		{: RESULT = nodo; :}
+	
+	|DOBLETOSTR:nodo	{: RESULT = nodo; :}
+	
+	|DOUBLETOINT:nodo	{: RESULT = nodo; :}
+	
+	| dolar numero:numt {:	Nodo nodo = new Nodo("accion1");
+							Nodo num = new Nodo(numt);
+							nodo.hijos.add(num);
+							RESULT = nodo; // $$.val = $#
+						:}
+	
+	| dolar numero:numt punto E:id	{:	Nodo nodo = new Nodo("accion2");
+										Nodo num = new Nodo(numt);
+										nodo.hijos.add(num);
+										nodo.hijos.add(id);
+										RESULT = nodo;  // $$.val = $#.ident
+									:}
+	
+	| dobledolar punto E:id	{:	Nodo nodo = new Nodo("accion3");
+								nodo.hijos.add(id);
+								RESULT = nodo; // $$.val = $$.ident
+							:}
+	
+				
+	| iden:obj punto E:id {:	Nodo nodo = new Nodo("objeto");
+								Nodo objeto = new Nodo(obj);
+								nodo.hijos.add(objeto);
+								nodo.hijos.add(id);
+								RESULT = nodo;  
+							:}
+							
+	| tthis:obj punto E:id {:	Nodo nodo = new Nodo("this");
+								Nodo objeto = new Nodo(obj);
+								nodo.hijos.add(objeto);
+								nodo.hijos.add(id);
+								RESULT = nodo;  
+							:}
+							
+	
+	|tnull:nulo	{:	Nodo nodo = new Nodo("null");
+					Nodo nnulo = new Nodo(nulo);
+					nodo.hijos.add(nnulo);
+					RESULT = nodo;
+	
+				:}
+				
+	| LLAMARMETODO:llamarm	{: RESULT = llamarm; :}
+	
+				;

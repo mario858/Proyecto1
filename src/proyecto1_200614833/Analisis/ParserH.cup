@@ -1,0 +1,127 @@
+package proyecto1_200614833.Analisis;
+import java_cup.runtime.*;
+import java.util.LinkedList;
+import proyecto1_200614833.Nodo;
+
+parser code
+{:
+
+/**Metodo al que se llama automáticamente ante algún error sintactico.*/
+public void syntax_error(Symbol s){
+System.out.println("Error en la Línea " + (s.right+1) +" Columna "+s.left+ ". Identificador "
++s.value + " no reconocido." );
+}
+
+/**Metodo al que se llama en el momento en que ya no es posible una recuperación de
+errores.*/
+public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+System.out.println("Error Sintactico en la Línea " + (s.right+1)+ "Columna "+s.left+". Identificador " +
+s.value + " no reconocido.");
+}
+
+public Nodo arbol;
+
+:}
+
+
+action code
+{:
+
+:}
+
+/* TERMINALES */
+
+terminal String tlet,tcalcular,taumento,tdecremento,tmin,tmax;
+terminal String tsum, tproduct, trevers, timpr, tpar, tasc, tdesc, tlength;
+terminal String tend,tif,tthen,telse,tcase;
+terminal String asignacion, por, division, mas, menos,potencia,mod, radicacion;
+terminal String dolar,ultimo;
+terminal String or, and;
+terminal String mayor, menor, mayorigual, menorigual, igualigual,noigual;
+terminal String allave, cllave, acorchete, ccorchete, aparentesis,cparentesis;
+terminal String coma,tconcat,tindice;
+terminal String cadena, numero, iden, caracter;
+
+/* NO TERMINALES */
+
+non terminal Nodo INICIA,CUERPO, DECLISTA, LISTAS, LISTA;
+non terminal Nodo E, CALCULAR, SUCC, DECC, MIN,MAX, CONCAT, SEGUNDALISTA;
+non terminal Nodo INDICES, LINDICE, INDICE,FUNCIONES2;
+non terminal Nodo FUNCIONES, IF,ELSE;
+non terminal Nodo SWITCH,CASOS,DEFECTO,CASE;
+
+
+//precedence left aumento, decremento;
+precedence left potencia;
+precedence left por, division;
+precedence left mas, menos;
+precedence left mayor, menor, menorigual , mayorigual;
+precedence left noigual, igualigual;
+//precedence left not;
+precedence left and;
+//precedence left xor;
+precedence left or;
+
+
+start with INICIA;
+
+INICIA::= CUERPO;
+
+CUERPO::= DECLISTA
+			|FUNCIONES
+			|FUNCIONES2;
+			
+FUNCIONES::= SUCC
+			|DECC
+			|MIN
+			|MAX
+			|CALCULAR
+			;
+			
+FUNCIONES2::=INDICES
+			|CONCAT;
+
+DECLISTA::= dolar tlet iden asignacion LISTA dolar
+			|dolar tlet iden asignacion CONCAT dolar;
+
+LISTA::= acorchete LISTAS ccorchete
+		|cadena;
+
+LISTAS::= LISTAS coma E
+		|E;
+
+CALCULAR::= dolar tcalcular E dolar;
+
+SUCC::= dolar taumento CALCULAR dolar;
+
+DECC::= dolar tdecremento CALCULAR dolar;
+
+//Lista, cadena  o id(nombre de una lista)
+MIN::= dolar tmin LISTA dolar;
+
+//Lista, cadena  o id(nombre de una lista)
+MAX::= dolar tmax LISTA dolar;
+
+//Verificar que sean lista y lista, cadena y cadena
+CONCAT ::= dolar LISTA tconcat LISTA dolar; 
+
+INDICES::= iden LINDICE
+		|LISTA LINDICE;
+
+LINDICE::= LINDICE INDICE
+		|INDICE;
+
+INDICE::= tindice E; 
+		
+E::= E mas E
+	|E menos E
+	|E por E
+	|E division E
+	|E potencia E
+	|numero
+	|cadena
+	|caracter
+	//|SEGUNDALISTALISTA
+	|FUNCIONES;
+	
+//SEGUNLISTA::= 
